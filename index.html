@@ -1,0 +1,543 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Access Token</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for the slider arrows -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #02040a; /* Deeper black */
+            color: white;
+            overscroll-behavior-y: none;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.3em;
+        }
+
+        /* Ambient Glowing Background Lights */
+        @keyframes liquidBlob {
+            0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+            50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+        }
+
+        .ambient-light-1 {
+            position: fixed;
+            top: -5%;
+            left: -10%;
+            width: 60vw;
+            height: 60vw;
+            max-width: 500px;
+            max-height: 500px;
+            background: linear-gradient(45deg, #0d6efd, #00f2fe);
+            filter: blur(40px);
+            opacity: 0.35;
+            animation: liquidBlob 12s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+            transform: translateZ(0);
+            will-change: border-radius, transform;
+        }
+
+        .ambient-light-2 {
+            position: fixed;
+            bottom: -10%;
+            right: -10%;
+            width: 70vw;
+            height: 70vw;
+            max-width: 600px;
+            max-height: 600px;
+            background: linear-gradient(45deg, #00f2fe, #4facfe);
+            filter: blur(40px);
+            opacity: 0.25;
+            animation: liquidBlob 15s ease-in-out infinite reverse;
+            z-index: 0;
+            pointer-events: none;
+            transform: translateZ(0);
+            will-change: border-radius, transform;
+        }
+
+        .swipe-container {
+            /* Heavy glassmorphism with bright inner cyan borders */
+            background: rgba(13, 110, 253, 0.05);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            box-shadow: inset 0 0 20px rgba(0, 242, 254, 0.1), 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        /* Glowing handle style */
+        .swipe-handle {
+            /* Liquid glass orb */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            /* Specular highlights on top/bottom to simulate glass */
+            box-shadow: inset 0px 4px 6px rgba(255, 255, 255, 0.6), 0 0 15px rgba(13, 110, 253, 0.6), inset 0px -4px 6px rgba(13, 110, 253, 0.6);
+            will-change: transform, filter, box-shadow;
+            transform: translate3d(0, 0, 0);
+        }
+        
+        .handle-blue {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.3), rgba(0, 242, 254, 0.3));
+        }
+        
+        /* Keep logos crisp */
+        .swipe-handle i {
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+        }
+
+        .glow-arrow {
+            filter: drop-shadow(0 0 8px rgba(13, 110, 253, 0.6));
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Subtle separator line */
+        .separator-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            width: 100%;
+            margin: 2rem 0;
+        }
+
+        /* Live Footer Animation */
+        @keyframes shield-pulse {
+            0%, 100% {
+                opacity: 0.6;
+                text-shadow: 0 0 5px rgba(13, 110, 253, 0.1);
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                text-shadow: 0 0 15px rgba(13, 110, 253, 0.6);
+                transform: scale(1.02);
+            }
+        }
+        .live-secure-footer {
+            animation: shield-pulse 3s infinite ease-in-out;
+            color: #0d6efd; /* Matching theme blue */
+        }
+        .live-secure-footer svg {
+            filter: drop-shadow(0 0 8px rgba(13, 110, 253, 0.5));
+        }
+
+        /* Light Burst / Ripple Effect for Successful Unlock */
+        .unlock-flash {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: #fff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            pointer-events: none;
+            z-index: 50;
+            animation: flash-burst 0.6s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+        }
+
+        @keyframes flash-burst {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; box-shadow: 0 0 20px 10px #0ff; }
+            100% { transform: translate(-50%, -50%) scale(60); opacity: 0; box-shadow: 0 0 60px 30px #0ff; }
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col items-center justify-center relative select-none">
+
+    <!-- Ambient Backgrounds -->
+    <div class="ambient-light-1"></div>
+    <div class="ambient-light-2"></div>
+
+    <!-- Main Content Wrapper -->
+    <div class="relative z-10 w-full max-w-[360px] px-6 flex flex-col items-center h-full max-h-[800px] justify-between py-12">
+        
+        <!-- Header Section -->
+        <div class="flex flex-col items-center w-full mt-8">
+            <h1 class="text-2xl font-medium text-gray-100 mb-6 uppercase">
+                Access <span class="text-blue-500 font-semibold" style="color: #0d6efd;">Token</span>
+            </h1>
+            <p class="text-gray-400 text-sm mb-10 tracking-wide">Swipe to open</p>
+            
+            <!-- Links/Buttons Container -->
+            <div class="w-full flex flex-col gap-5">
+                
+                <!-- Facebook -->
+                <div class="swipe-container relative h-[60px] bg-slate-900/40 border border-slate-700/50 rounded-full flex items-center w-full overflow-hidden" data-url="https://auth.garena.com/universal/oauth?platform=3&response_type=code&locale=en-SG&client_id=100067&redirect_uri=https://api.ff.garena.co.id/auth/auth/callback_n?site=https://api-discountstore.kiosgamer.gameid.garena.co.id/oauth/callback_redirect/">
+                    <!-- Target Destination arrows -->
+                    <div class="absolute right-5 text-gray-600 z-10 pointer-events-none text-lg">
+                        <i class="fas fa-angle-double-right glow-arrow"></i>
+                    </div>
+                    <div class="absolute w-full text-center text-sm font-medium text-gray-200 z-0 pointer-events-none pl-6 pr-10">
+                        Continue with Facebook
+                    </div>
+                    <!-- Draggable Handle with Logo -->
+                    <div class="swipe-handle handle-blue absolute left-1 w-[52px] h-[52px] rounded-full flex items-center justify-center z-20 cursor-grab touch-none">
+                        <i class="fab fa-facebook text-white text-[24px]"></i>
+                    </div>
+                </div>
+
+                <!-- Google -->
+                <div class="swipe-container relative h-[60px] bg-slate-900/40 border border-slate-700/50 rounded-full flex items-center w-full overflow-hidden" data-url="https://auth.garena.com/universal/oauth?platform=8&response_type=code&locale=en-SG&client_id=100067&redirect_uri=https://api.ff.garena.co.id/auth/auth/callback_n?site=https://api-discountstore.kiosgamer.gameid.garena.co.id/oauth/callback_redirect/">
+                    <div class="absolute right-5 text-gray-600 z-10 pointer-events-none text-lg">
+                        <i class="fas fa-angle-double-right glow-arrow"></i>
+                    </div>
+                    <div class="absolute w-full text-center text-sm font-medium text-gray-200 z-0 pointer-events-none pl-6 pr-10">
+                        Continue with Google
+                    </div>
+                    <div class="swipe-handle handle-blue absolute left-1 w-[52px] h-[52px] rounded-full flex items-center justify-center z-20 cursor-grab touch-none">
+                        <i class="fab fa-google text-white text-[22px]"></i>
+                    </div>
+                </div>
+
+                <!-- Apple ID -->
+                <div class="swipe-container relative h-[60px] bg-slate-900/40 border border-slate-700/50 rounded-full flex items-center w-full overflow-hidden" data-url="https://auth.garena.com/universal/oauth?platform=10&response_type=code&locale=en-SG&client_id=100067&redirect_uri=https://api.ff.garena.co.id/auth/auth/callback_n?site=https://api-discountstore.kiosgamer.gameid.garena.co.id/oauth/callback_redirect/">
+                    <div class="absolute right-5 text-gray-600 z-10 pointer-events-none text-lg">
+                        <i class="fas fa-angle-double-right glow-arrow"></i>
+                    </div>
+                    <div class="absolute w-full text-center text-sm font-medium text-gray-200 z-0 pointer-events-none pl-6 pr-10">
+                        Continue with Apple ID
+                    </div>
+                    <div class="swipe-handle handle-blue absolute left-1 w-[52px] h-[52px] rounded-full flex items-center justify-center z-20 cursor-grab touch-none">
+                        <i class="fab fa-apple text-white text-[26px] mb-1"></i>
+                    </div>
+                </div>
+
+                <!-- X / Twitter -->
+                <div class="swipe-container relative h-[60px] bg-slate-900/40 border border-slate-700/50 rounded-full flex items-center w-full overflow-hidden" data-url="https://auth.garena.com/universal/oauth?platform=11&response_type=code&locale=en-SG&client_id=100067&redirect_uri=https://api.ff.garena.co.id/auth/auth/callback_n?site=https://api-discountstore.kiosgamer.gameid.garena.co.id/oauth/callback_redirect/">
+                    <div class="absolute right-5 text-gray-600 z-10 pointer-events-none text-lg">
+                        <i class="fas fa-angle-double-right glow-arrow"></i>
+                    </div>
+                    <div class="absolute w-full text-center text-sm font-medium text-gray-200 z-0 pointer-events-none pl-6 pr-10">
+                        Continue with X / Twitter
+                    </div>
+                    <div class="swipe-handle handle-blue absolute left-1 w-[52px] h-[52px] rounded-full flex items-center justify-center z-20 cursor-grab touch-none">
+                        <i class="fa-brands fa-x-twitter text-white text-[22px]"></i>
+                    </div>
+                </div>
+
+                <!-- VK -->
+                <div class="swipe-container relative h-[60px] bg-slate-900/40 border border-slate-700/50 rounded-full flex items-center w-full overflow-hidden" data-url="https://auth.garena.com/universal/oauth?platform=5&response_type=code&locale=en-SG&client_id=100067&redirect_uri=https://api.ff.garena.co.id/auth/auth/callback_n?site=https://api-discountstore.kiosgamer.gameid.garena.co.id/oauth/callback_redirect/">
+                    <div class="absolute right-5 text-gray-600 z-10 pointer-events-none text-lg">
+                        <i class="fas fa-angle-double-right glow-arrow"></i>
+                    </div>
+                    <div class="absolute w-full text-center text-sm font-medium text-gray-200 z-0 pointer-events-none pl-6 pr-10">
+                        Continue with VK
+                    </div>
+                    <div class="swipe-handle handle-blue absolute left-1 w-[52px] h-[52px] rounded-full flex items-center justify-center z-20 cursor-grab touch-none">
+                        <i class="fab fa-vk text-white text-[24px]"></i>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="w-full flex flex-col items-center mb-4">
+            <div class="separator-line"></div>
+            <!-- Fixed flex layout and added live animation class -->
+            <div class="flex items-center justify-center gap-2 live-secure-footer">
+                <!-- Clean SVG Shield icon to replace the overlapping FontAwesome one -->
+                <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+                <span class="text-xs tracking-wider uppercase font-semibold">Secure & Private</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript for Swipe Logic -->
+    <script>
+        // Web Audio API setup
+        let audioCtx = null;
+        let swipeSource = null;
+        let swipeFilter = null;
+        let swipeGain = null;
+        let noiseBuffer = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function createNoiseBuffer() {
+            if (noiseBuffer || !audioCtx) return;
+            const bufferSize = audioCtx.sampleRate * 2; // 2 seconds
+            noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1; // White noise synthesis
+            }
+        }
+
+        // Credit Card Swipe Friction Sound
+        function startChargeSound() {
+            if (!audioCtx) return;
+            createNoiseBuffer();
+            if (swipeSource) stopChargeSound();
+            
+            swipeSource = audioCtx.createBufferSource();
+            swipeSource.buffer = noiseBuffer;
+            swipeSource.loop = true;
+            
+            // Bandpass filter to make white noise sound like plastic sliding
+            swipeFilter = audioCtx.createBiquadFilter();
+            swipeFilter.type = 'bandpass';
+            swipeFilter.frequency.value = 800; // Base friction frequency
+            swipeFilter.Q.value = 1.0;
+            
+            swipeGain = audioCtx.createGain();
+            swipeGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            swipeGain.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 0.05); // Quick fade in, significantly lowered volume
+            
+            swipeSource.connect(swipeFilter);
+            swipeFilter.connect(swipeGain);
+            swipeGain.connect(audioCtx.destination);
+            
+            swipeSource.start();
+        }
+
+        function updateChargeSound(progress) {
+            if (!audioCtx || !swipeFilter || !swipeGain) return;
+            const now = audioCtx.currentTime;
+            
+            // Shift bandpass frequency up slightly as you swipe further
+            const freq = 800 + (progress * 1500);
+            swipeFilter.frequency.setTargetAtTime(freq, now, 0.05);
+            
+            // Adjust volume based on progress to simulate varying friction (lowered volume)
+            const vol = 0.02 + (progress * 0.04);
+            swipeGain.gain.setTargetAtTime(vol, now, 0.05);
+        }
+
+        function stopChargeSound() {
+            if (!audioCtx || !swipeGain || !swipeSource) return;
+            const now = audioCtx.currentTime;
+            swipeGain.gain.linearRampToValueAtTime(0, now + 0.1);
+            swipeSource.stop(now + 0.1);
+            swipeSource = null;
+            swipeGain = null;
+            swipeFilter = null;
+        }
+
+        // Mechanical Terminal Success Click & Chime
+        function playUnlockSound() {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            
+            // Mechanical solid click (Square wave dropping pitch rapidly)
+            const clickOsc = audioCtx.createOscillator();
+            const clickGain = audioCtx.createGain();
+            clickOsc.type = 'square';
+            clickOsc.frequency.setValueAtTime(200, now);
+            clickOsc.frequency.exponentialRampToValueAtTime(30, now + 0.05);
+            
+            // Significantly lowered click volume
+            clickGain.gain.setValueAtTime(0.1, now);
+            clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            
+            clickOsc.connect(clickGain);
+            clickGain.connect(audioCtx.destination);
+            clickOsc.start(now);
+            clickOsc.stop(now + 0.05);
+            
+            // Terminal success chime (High Sine Ping-Pong)
+            const chimeOsc = audioCtx.createOscillator();
+            const chimeGain = audioCtx.createGain();
+            chimeOsc.type = 'sine';
+            chimeOsc.frequency.setValueAtTime(1400, now + 0.06);
+            chimeOsc.frequency.setValueAtTime(1800, now + 0.18);
+            
+            // Significantly lowered chime volume
+            chimeGain.gain.setValueAtTime(0, now);
+            chimeGain.gain.setValueAtTime(0.06, now + 0.06);
+            chimeGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+            
+            chimeOsc.connect(chimeGain);
+            chimeGain.connect(audioCtx.destination);
+            chimeOsc.start(now + 0.06);
+            chimeOsc.stop(now + 0.5);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const containers = document.querySelectorAll('.swipe-container');
+
+            containers.forEach(container => {
+                const handle = container.querySelector('.swipe-handle');
+                const targetUrl = container.dataset.url;
+                
+                let isDragging = false;
+                let startX = 0;
+                let currentTranslate = 0;
+                let animationFrameId = null;
+                
+                // Define dragging boundaries
+                let maxDrag = 0;
+                const setMaxDrag = () => {
+                    maxDrag = container.offsetWidth - handle.offsetWidth - 8; 
+                };
+
+                setMaxDrag();
+                window.addEventListener('resize', setMaxDrag);
+
+                // GPU Accelerated Visual Update via requestAnimationFrame
+                const updateDOM = () => {
+                    const progress = currentTranslate / maxDrag;
+
+                    // Dynamic color shift (Blue to Cyan)
+                    const r = Math.round(13 - (progress * 13)); 
+                    const g = Math.round(110 + (progress * 145));
+                    const b = 255;
+                    
+                    // Intense glowing trail calculations
+                    const glowSpread = 20 + (progress * 40);
+                    const glowOpacity = 0.7 + (progress * 0.3);
+                    
+                    // Maintain liquid glass highlights while boosting glow and adding a heavy backward trail
+                    handle.style.boxShadow = `
+                        inset 0px 4px 6px rgba(255, 255, 255, 0.6), 
+                        inset 0px -4px 6px rgba(${r}, ${g}, ${b}, 0.6), 
+                        0 0 ${glowSpread}px rgba(${r}, ${g}, ${b}, ${glowOpacity}),
+                        -30px 0 ${glowSpread}px rgba(${r}, ${g}, ${b}, ${glowOpacity * 0.8}),
+                        -60px 0 ${glowSpread * 1.5}px rgba(${r}, ${g}, ${b}, ${glowOpacity * 0.5})
+                    `;
+                    
+                    // Apply motion blur trail ONLY to the background using drop-shadow, keeping the logo sharp
+                    handle.style.filter = `drop-shadow(-10px 0px 10px rgba(${r}, ${g}, ${b}, ${glowOpacity}))`;
+
+                    updateChargeSound(progress); // Sync pitch with drag distance
+
+                    // Using translate3d for forced hardware acceleration
+                    handle.style.transform = `translate3d(${currentTranslate}px, 0, 0)`;
+                    
+                    const opacity = 1 - progress;
+                    const textEl = container.querySelector('.text-center');
+                    if(textEl) textEl.style.opacity = Math.max(0.2, opacity);
+
+                    animationFrameId = null;
+                };
+
+                const onDragStart = (e) => {
+                    isDragging = true;
+                    initAudio(); // Crucial: Initialize audio context on first user interaction
+                    
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                    }
+
+                    startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                    // Instantly remove transition for zero-latency dragging
+                    handle.style.transition = 'none';
+                    handle.style.cursor = 'grabbing';
+                    handle.style.filter = ''; // Reset filter
+                    
+                    startChargeSound(); // Start the energy charging synth
+                };
+
+                const onDragMove = (e) => {
+                    if (!isDragging) return;
+                    
+                    if(e.type.includes('touch')) {
+                        e.preventDefault(); 
+                    }
+
+                    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                    const deltaX = clientX - startX;
+                    
+                    currentTranslate = Math.max(0, Math.min(deltaX, maxDrag));
+                    
+                    // Queue visual update for the next browser frame (Zero Latency)
+                    if (!animationFrameId) {
+                        animationFrameId = requestAnimationFrame(updateDOM);
+                    }
+                };
+
+                const onDragEnd = () => {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                    }
+
+                    handle.style.cursor = 'grab';
+                    
+                    // Apply BUTTERY SMOOTH, non-bouncy transition using cubic-bezier for a perfect fluid glide back
+                    const smoothTransition = '0.4s cubic-bezier(0.22, 1, 0.36, 1)';
+                    handle.style.transition = `transform ${smoothTransition}, box-shadow ${smoothTransition}, filter ${smoothTransition}`;
+                    
+                    stopChargeSound(); // Stop the charging synth
+                    
+                    const textEl = container.querySelector('.text-center');
+                    if(textEl) textEl.style.transition = `opacity ${smoothTransition}`;
+
+                    if (currentTranslate > maxDrag * 0.8) {
+                        handle.style.transform = `translate3d(${maxDrag}px, 0, 0)`;
+                        handle.style.filter = '';
+                        
+                        playUnlockSound(); // Play heavy confirmation tone
+                        
+                        // Create the light burst flash effect
+                        const burst = document.createElement('div');
+                        burst.classList.add('unlock-flash');
+                        container.appendChild(burst);
+
+                        setTimeout(() => {
+                            handle.style.boxShadow = ''; // Reset custom glow
+                            burst.remove(); // Cleanup flash element
+                            console.log(`Successfully unlocked! Action triggered for: ${targetUrl}`);
+                            window.open(targetUrl, '_blank');
+                            
+                            setTimeout(() => {
+                                handle.style.transform = `translate3d(0px, 0, 0)`;
+                                if(textEl) textEl.style.opacity = 1;
+                                currentTranslate = 0;
+                            }, 500);
+                        }, 600);
+
+                    } else {
+                        // Smooth glide back to 0
+                        handle.style.transform = `translate3d(0px, 0, 0)`;
+                        handle.style.boxShadow = ''; // Reset custom glow back to CSS default
+                        handle.style.filter = ''; // Remove motion trail
+                        if(textEl) textEl.style.opacity = 1;
+                        currentTranslate = 0;
+                    }
+                };
+
+                handle.addEventListener('mousedown', onDragStart);
+                window.addEventListener('mousemove', onDragMove);
+                window.addEventListener('mouseup', onDragEnd);
+
+                handle.addEventListener('touchstart', onDragStart, { passive: true });
+                window.addEventListener('touchmove', onDragMove, { passive: false });
+                window.addEventListener('touchend', onDragEnd);
+                window.addEventListener('touchcancel', onDragEnd);
+            });
+        });
+    </script>
+</body>
+</html>
